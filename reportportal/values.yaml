@@ -126,7 +126,10 @@ serviceui:
   podLabels: {}
   affinity: {}
   podAnnotations: {}
-  securityContext: {}
+  securityContext:
+    fsGroup: 1000
+    runAsGroup: 1000
+    runAsUser: 1000
   ## @param serviceui.nodeSelector define which Nodes the Pods are scheduled on.
   ## You can choose compute classes for GKE Autopilot Pods https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-compute-classes
   ## Use cloud.google.com/compute-class: "COMPUTE_CLASS" for specific GKE Autopilot compute class.
