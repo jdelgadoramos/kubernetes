@@ -39,10 +39,6 @@ dependencies:
     version: 14.7.0
     repository: https://charts.bitnami.com/bitnami
     condition: rabbitmq.install
-  - name: opensearch
-    version: 2.27.1
-    repository: https://opensearch-project.github.io/helm-charts/
-    condition: opensearch.install
   - name: minio
     version: 14.10.0
     repository: https://charts.bitnami.com/bitnami

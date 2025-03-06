@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: reportportal-aws-otk-dev-platform-use1-002
+spec:
+  destination:
+    name: aws-otk-dev-platform-use1-002
+    namespace: reportportal
+  source:
+    path: environments/dev/platform/use1/002/
+    repoURL: https://github.com/twilio-internal/reportportal-gitops.git
+    targetRevision: HEAD
+    directory:
+      recurse: true
+  project: reportportal-dev
+  syncPolicy:
+    automated: {}

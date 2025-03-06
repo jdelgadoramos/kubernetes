@@ -5,10 +5,6 @@
 # VSCode
 .vscode/
 
-# Helm
-charts/
-/reportportal/charts/
-/reportportal/Chart.lock
 
 # Other
 *.xml

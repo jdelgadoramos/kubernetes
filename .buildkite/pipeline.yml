@@ -1,0 +1,37 @@
+steps:
+  - label: "ArgoCD Application"
+    plugins:
+      - twilio-internal/argocd-app-provisioner#v1.0.8:
+          directory: "argocd"
+  - label: ":kubernetes: OTK verification"
+    key: verification
+    env:
+      DOCKER_CONFIG: /tmp/$BUILDKITE_BUILD_ID
+    plugins:
+      - ecr#v2.7.0:
+          login: true
+          account_ids: "018537234677"
+          region: "us-east-1"
+      - twilio-internal/otk-validator#main
+      # If this step fails because generated helm values are missing, such as the image values generated from the docker build step,
+      # add test values to .otk-validator/config.yaml under helm_chart_validation.helm_set_values
+  - label: "Render deployment manifest for dev"
+    key: deploy-dev
+    agents:
+      queue: otk-manifest-renderer
+    plugins:
+      - ecr#${ECR_BK_PLUGIN_VERSION}:
+          login: true
+          account_ids: "018537234677"
+          region: "us-east-1"
+      - twilio-internal/render-manifests#${TWILIO_RENDER_MANIFESTS_BK_PLUGIN_VERSION}:
+          auto_merge: true
+          gitops_repo: git@github.com:twilio-internal/reportportal-gitops.git
+          render:
+            - helm:
+                source: chart
+                destination: environments/dev/platform/use1/002
+                values_files:
+                  - values.yaml
+                release_name: reportportal
+                template_args: "--namespace reportportal"

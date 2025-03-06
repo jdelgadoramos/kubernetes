@@ -9,8 +9,11 @@
 ## @param global.fullnameOverride expand the fully qualified app name
 ##
 global:
-  imageRegistry: ""
+  imageRegistry: "018537234677.dkr.ecr.us-east-1.amazonaws.com/docker.io"
+  dockerRegistry: "018537234677.dkr.ecr.us-east-1.amazonaws.com/docker.io"
   imagePullSecrets: []
+  annotations:
+    kubernetes.twilio.com/service-name: reportportal
   nameOverride: ""
   fullnameOverride: ""
   security:
@@ -178,14 +181,14 @@ serviceapi:
   ## @param serviceapi.auditLogs.loglevel define log level
   ##
   auditLogs:
-    enable: false
+    enable: true
     loglevel: info
     ## @param serviceapi.auditLogs.sidecar define sidecar container configuration
     ##
     sidecar:
       image:
-        repository: busybox
-        tag: latest
+        repository: library/busybox
+        tag: 1.36-uclibc
       resources:
         requests:
           cpu: 10m
@@ -330,7 +333,7 @@ uat:
   superadminInitPasswd:
     secretName: ""
     passwordKeyName: "superadmin-password"
-    password: ""
+    password: "superadmin"
   ## @param uat.javaArgs define the configuration for the JVM.
   ## For custom java keystore add parameter: -Djavax.net.ssl.trustStore=/etc/secret-volume/custom-pki.jks
   ##
@@ -769,9 +772,10 @@ ingress:
   enable: true
   ## @param ingress.hosts can be a list or a single string
   ##
-  hosts: null
   path: null
-  class: nginx
+  class: alb
+  hosts:
+    reportportal.aws-otk-dev-platform-use1-002.otk.twilioinfra.com
   annotations:
     nginx:
       nginx.ingress.kubernetes.io/ssl-redirect: "false"
@@ -783,7 +787,15 @@ ingress:
       nginx.ingress.kubernetes.io/proxy-read-timeout: "4000"
       nginx.ingress.kubernetes.io/proxy-send-timeout: "4000"
     gce: {}
-    custom: {}
+    custom:
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/group.name: reportportal
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+      alb.ingress.kubernetes.io/success-codes: '200,201,302'
+      alb.ingress.kubernetes.io/inbound-cidrs: "107.20.226.156/32,52.202.165.16/32,174.129.201.211/32,107.20.166.29/32,23.21.191.107/32,23.21.191.120/32,107.20.145.127/32"
+      alb.ingress.kubernetes.io/healthcheck-path: "/api/health"
+      alb.ingress.kubernetes.io/healthcheck-port: '8080'
+      alb.ingress.kubernetes.io/scheme: internet-facing
   tls:
     certificates: null
     certificate:
@@ -882,6 +894,8 @@ postgresql:
     service:
       ports:
         postgresql: *dbport
+  commonAnnotations:
+    kubernetes.twilio.com/service-name: reportportal
 
 ## @param rabbitmq External RabbitMQ Helm Chart as dependency
 ## Set @param rabbitmq.install to `false` if using a Cloud/On-Premise managed RabbitMQ
@@ -905,6 +919,8 @@ rabbitmq:
     rabbitmq_consistent_hash_exchange
     rabbitmq_shovel
     rabbitmq_shovel_management
+  commonAnnotations:
+    kubernetes.twilio.com/service-name: reportportal
 
 ## @param opensearch External OpenSearch Helm Chart as dependency
 ## Set @param opensearch.install to `false` if using a Cloud/On-Premise managed OpenSearch
@@ -927,6 +943,8 @@ opensearch:
       value: "true"
     - name: DISABLE_SECURITY_PLUGIN
       value: "true"
+  openSearchAnnotations:
+    kubernetes.twilio.com/service-name: reportportal
 
 ## @param minio External MinIO Helm Chart
 ## Set @param minio.install to `false` if using a Cloud/On-Premise managed binary storage
@@ -942,3 +960,5 @@ minio:
   persistence:
     annotations:
       "helm.sh/resource-policy": "keep"
+  commonAnnotations:
+    kubernetes.twilio.com/service-name: reportportal
